@@ -37,14 +37,49 @@ function onPlayerReady(event) {
 // 5. The API calls this function when the player's state changes.
 //    The function indicates that when playing a video (state=1),
 //    the player should play for six seconds and then stop.
-var done = false;
-function onPlayerStateChange(event) {
-    // if (event.data == YT.PlayerState.PLAYING && !done) {
-    //     setTimeout(stopVideo, 6000);
-    //     done = true;
-    // }
+function seekIf(currentTime, previousTime) {
+    console.trace({ currentTime, previousTime} )
+    const seconds = player.getCurrentTime()
+    if (Math.abs(previousTime - currentTime) > 1) {
+        send({ type: 'SEEK', seconds })
+    }
 }
 
+function sendSeek() {
+
+}
+
+function onPlayerStateChange(event) {
+    console.log('player state change', event.data, player.locked)
+    const state = event.data   
+    if (state === YT.PlayerState.UNSTARTED) {
+        return
+    }
+
+    send({ type: 'SEEK', seconds: player.getCurrentTime()})
+    if (state === YT.PlayerState.PLAYING) {
+        const seconds = player.getCurrentTime()
+        send({ type: 'PLAY' })
+    } else if (state === YT.PlayerState.PAUSED) {
+        send({ type: 'PAUSE'})
+    } else if (state === YT.PlayerState.BUFFERING) {
+        send({ type: 'PAUSE' })
+    } else if (state === YT.PlayerState.ENDED) {
+        // NOTHING
+    } else if (state === YT.PlayerState.CUED) {
+        // NOTHING
+    } else if (state === YT.PlayerState.UNSTARTED) {
+        // NOTHING
+    }
+}
+
+function send(data) {
+    const id = document.getElementById('id').value
+    if (!window.ws) {
+        throw Error('websocket is not present in the window object')
+    }
+    ws.send(JSON.stringify({ ...data, id }))
+}
 function stopVideo() {
     player.stopVideo();
 }

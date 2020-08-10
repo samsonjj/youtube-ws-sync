@@ -30,18 +30,19 @@ function createYtWebsocket(player, onClose) {
 
 function handleMessage(ws, msg) {
     const player = ws.player
-    
+
     const data = JSON.parse(msg.data)
     
     if (data.type === 'PLAY') {
-        console.log('gotta play!')
         player.playVideo()
     } else if (data.type === 'PAUSE') {
-        console.log('gotta pause!')
         player.pauseVideo()
     } else if (data.type === 'SEEK') {
         const seconds = data.seconds
-        player.seekTo(seconds, true) // (seconds, allowSeekAhead)
+        const currentTime = player.getCurrentTime()
+        if (Math.abs(seconds - currentTime) > 1) {
+            player.seekTo(seconds, true) // (seconds, allowSeekAhead)
+        }
     } else if (data.type === 'RATE') {
         const rate = data.rate
         player.setPlaybackRate(rate)
