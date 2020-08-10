@@ -1,10 +1,3 @@
-// 2. This code loads the IFrame Player API code asynchronously.
-var tag = document.createElement('script');
-
-tag.src = "https://www.youtube.com/iframe_api";
-var firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
 // 3. This function creates an <iframe> (and YouTube player)
 //    after the API code downloads.
 var player;
@@ -21,6 +14,8 @@ function onYouTubeIframeAPIReady() {
         //     origin: 'mysite.com'
         // }
     });
+
+    player.waitFor = []
 }
 
 // 4. The API will call this function when the video player is ready.
@@ -37,21 +32,23 @@ function onPlayerReady(event) {
 // 5. The API calls this function when the player's state changes.
 //    The function indicates that when playing a video (state=1),
 //    the player should play for six seconds and then stop.
-function seekIf(currentTime, previousTime) {
-    console.trace({ currentTime, previousTime} )
-    const seconds = player.getCurrentTime()
-    if (Math.abs(previousTime - currentTime) > 1) {
-        send({ type: 'SEEK', seconds })
-    }
-}
-
-function sendSeek() {
-
-}
-
+let _prevState = -1000
 function onPlayerStateChange(event) {
-    console.log('player state change', event.data, player.locked)
+    console.log('player state change', event.data)
     const state = event.data   
+    const prevState = _prevState
+    _prevState = state
+
+    console.log('waitFor', player.waitFor, state)
+    if (player.waitFor.length > 0) {
+        console.log('waiting!')
+        if (state === player.waitFor[0]) {
+            player.waitFor.splice(0, 1)
+        }
+        console.log('after', player.waitFor)
+        return
+    }
+
     if (state === YT.PlayerState.UNSTARTED) {
         return
     }
@@ -63,6 +60,7 @@ function onPlayerStateChange(event) {
     } else if (state === YT.PlayerState.PAUSED) {
         send({ type: 'PAUSE'})
     } else if (state === YT.PlayerState.BUFFERING) {
+        // if (prevState === YT.PlayerState.UNSTARTED) return
         send({ type: 'PAUSE' })
     } else if (state === YT.PlayerState.ENDED) {
         // NOTHING

@@ -35,8 +35,10 @@ function handleMessage(ws, msg) {
     
     if (data.type === 'PLAY') {
         player.playVideo()
+        player.waitFor = [YT.PlayerState.PLAYING]
     } else if (data.type === 'PAUSE') {
         player.pauseVideo()
+        player.waitFor = [YT.PlayerState.PAUSED]
     } else if (data.type === 'SEEK') {
         const seconds = data.seconds
         const currentTime = player.getCurrentTime()
