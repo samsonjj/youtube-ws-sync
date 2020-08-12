@@ -1,8 +1,24 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <link rel="stylesheet" href="index.css"></link>
+  </head>
   <body>
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
-    <div id="player"></div>
+    <div class="container">
+      <header class="blue section">
+        <span>
+          <input id="url-input" type="text" placeholder="url">
+          <button onclick="loadVideo()">load</button>
+        </span>
+      </header>
+      <main>
+        <div><div id="player"></div></div>
+      </main>
+      <footer>
+        <input id="id" type=text placeholder="id">
+      </footer>
+    </div>
     
     <script>
       // 2. This code loads the IFrame Player API code asynchronously.
@@ -13,7 +29,22 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     </script>
 
-    <input id="id" type=text placeholder="id">
+    <script>
+      function loadVideo() {
+        let url, id
+        try {
+          url = new URL(document.getElementById('url-input').value)
+          videoId = url.searchParams.get('v')
+        } catch (err) {
+          console.error(err)
+          alert(err.message)
+        }
+        player.loadVideoById(videoId)
+        player.pauseVideo()
+        send({ type: 'LOAD', videoId })
+      }
+    </script>
+
 
     <script src="ws-init.js"></script>
     <script src="ytb-init.js"></script>

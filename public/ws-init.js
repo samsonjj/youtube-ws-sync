@@ -37,19 +37,24 @@ function handleMessage(ws, msg) {
         player.playVideo()
         player.waitFor = [YT.PlayerState.PLAYING]
     } else if (data.type === 'PAUSE') {
+        // if (player.waitFor[0] === YT.PlayerState.PAUSED) {
+        //     player.waitFor = player.waitFor.split(0, 1)
+        // }
         player.pauseVideo()
         player.waitFor = [YT.PlayerState.PAUSED]
     } else if (data.type === 'SEEK') {
-        const seconds = data.seconds
-        const currentTime = player.getCurrentTime()
-        if (Math.abs(seconds - currentTime) > 1) {
-            player.seekTo(seconds, true) // (seconds, allowSeekAhead)
+        const sync = data.sync
+        const mySync = Date.now() / 1000 - player.getCurrentTime()
+        if (Math.abs(mySync - sync) > 0) {
+            player.lastSync = sync
+            // player.seekTo(Date.now() / 1000 - sync, true) // (seconds, allowSeekAhead)
         }
     } else if (data.type === 'RATE') {
         const rate = data.rate
         player.setPlaybackRate(rate)
     } else if (data.type === 'LOAD') {
-        const id = data.id
+        const id = data.videoId
         player.loadVideoById(id)
+        player.waitFor = [YT.PlayerState.PAUSED]
     }
 }

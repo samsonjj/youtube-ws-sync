@@ -35,17 +35,22 @@ function onPlayerReady(event) {
 let _prevState = -1000
 function onPlayerStateChange(event) {
     console.log('player state change', event.data)
-    const state = event.data   
+    const state = event.data
     const prevState = _prevState
     _prevState = state
 
-    console.log('waitFor', player.waitFor, state)
+    if (state === YT.PlayerState.PLAYING && player.lastSync) {
+        console.log('seeking!')
+        player.seekTo(Date.now() / 1000 - player.lastSync)
+        player.lastSync = undefined
+        player.waitFor.push(YT.PlayerState.PLAYING)
+    }
+
+    console.log({'waitFor': player.waitFor, state})
     if (player.waitFor.length > 0) {
-        console.log('waiting!')
         if (state === player.waitFor[0]) {
             player.waitFor.splice(0, 1)
         }
-        console.log('after', player.waitFor)
         return
     }
 
@@ -53,12 +58,16 @@ function onPlayerStateChange(event) {
         return
     }
 
-    send({ type: 'SEEK', seconds: player.getCurrentTime()})
+    send({
+        type: 'SEEK',
+        sync: Date.now() / 1000 - player.getCurrentTime()
+    })
     if (state === YT.PlayerState.PLAYING) {
         const seconds = player.getCurrentTime()
+        console.log('about to seek')
         send({ type: 'PLAY' })
     } else if (state === YT.PlayerState.PAUSED) {
-        send({ type: 'PAUSE'})
+        send({ type: 'PAUSE' })
     } else if (state === YT.PlayerState.BUFFERING) {
         // if (prevState === YT.PlayerState.UNSTARTED) return
         send({ type: 'PAUSE' })
@@ -76,6 +85,7 @@ function send(data) {
     if (!window.ws) {
         throw Error('websocket is not present in the window object')
     }
+    console.log('ws sending', { ...data, id })
     ws.send(JSON.stringify({ ...data, id }))
 }
 function stopVideo() {

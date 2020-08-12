@@ -1,0 +1,27 @@
+body {
+    margin: 0px
+}
+
+.container {
+    display           : grid;
+    place-items       : center;
+    grid-template-rows: auto 1fr auto;
+}
+
+header {
+    padding: 2rem;
+}
+
+main {
+    display    : grid;
+    place-items: center;
+
+    padding-top     : 2rem;
+    padding-bottom  : 2rem;
+    background-image: linear-gradient(#eeeeee, #ffffff);
+    width           : 100%;
+}
+
+#url-input {
+    width: 300px;
+}
