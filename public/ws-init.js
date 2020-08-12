@@ -3,7 +3,7 @@
 // for elements outside iframe API capabilities, e.g. playback rate
 
 function createYtWebsocket(player, onClose) {
-    ws = new WebSocket("ws://localhost:8080")
+    ws = new WebSocket(window.wsUrl)
 
     ws.player = player 
 

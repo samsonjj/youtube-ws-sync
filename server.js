@@ -13,7 +13,12 @@ const wss = new WebSocket.Server({ server })
 
 
 // configure
-app.use(express.static('public'))
+app.set('view engine', 'ejs')
+app.use(express.static(__dirname + '/public'))
+
+app.get('/', function(req, res) {
+    res.render('pages/index', { wsUrl: process.env.WSURL || 'ws://localhost:8080'})
+})
 
 wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(message) {
